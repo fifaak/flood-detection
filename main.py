@@ -1,99 +1,244 @@
-"""
-FloodGuard: ระบบคาดการณ์ระดับน้ำท่วม
-Main application entry point using clean architecture.
-"""
 import streamlit as st
-import sys
-from pathlib import Path
+import pandas as pd
+import numpy as np
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent / "src"))
+# --- 1. ข้อมูลและค่าคงที่จากเอกสาร ---
 
-from src.models.saint_venant import SaintVenantSolver
-from src.ui.components import InputComponents, DisplayComponents
-from src.utils.config import config
-from src.utils.validators import ParameterValidator
+# ค่าคงที่สากล
+G_CONSTANT = 9.81    # (g) ค่าความเร่งโน้มถ่วง (เมตร/วินาที^2)
+Z_BED = 1.497        # (z) ระดับท้องร่อง (เมตร)
+DELTA_X = 500.0      # (Δx) ระยะห่างในแต่ละช่วง (เมตร)
+NUM_STEPS = 14       # (n) จำนวนช่วง (7000 ม. / 500 ม.)
 
+# ข้อมูลดิบจาก ตารางที่ 1 (หน้า -12-)
+RAW_DATA_TABLE_1 = {
+    2564: {
+        'S_0': 0.02253, 'n': 0.04, 'Q': 255.542, 'A': 1295.25, 'R': 8.659, 'v': 0.197, 'y_0': 0.3
+    },
+    2565: {
+        'S_0': 0.02317, 'n': 0.04, 'Q': 481.249, 'A': 1278.75, 'R': 8.548, 'v': 0.371, 'y_0': 0.3
+    },
+    2566: {
+        'S_0': 0.01977, 'n': 0.04, 'Q': 181.603, 'A': 1359.66, 'R': 9.089, 'v': 0.140, 'y_0': 0.3
+    },
+    2567: {
+        'S_0': 0.02107, 'n': 0.04, 'Q': 258.136, 'A': 1317.50, 'R': 8.807, 'v': 0.199, 'y_0': 0.3
+    }
+}
 
-class FloodGuardApp:
-    """Main FloodGuard application class."""
+# ข้อมูล (ที่ขัดแย้งกัน) จาก ตารางที่ 2 (หน้า -13-)
+# นี่คือค่า dy/dx ที่ผู้เขียนเอกสารใช้จริงในการคำนวณขั้นตอนต่อไป
+PAPER_DY_DX_TABLE_2 = {
+    2564: {'dy_dx': 3.50252e-4},
+    2565: {'dy_dx': 1.29659e-5},
+    2566: {'dy_dx': 1.50482e-5},
+    2567: {'dy_dx': 3.37711e-4}
+}
+
+# --- 2. ฟังก์ชันการคำนวณ (อัปเดต) ---
+
+def calculate_Sf(n, Q, A, R):
+    """คำนวณ S_f ตามสมการหน้า -12-"""
+    if A == 0 or R == 0:
+        return 0
+    # S_f = (nQ / (A * R^(2/3)))^2
+    term = (n * Q) / (A * (R**(2/3)))
+    return term**2
+
+def calculate_Fr(v, g, y_0):
+    """คำนวณ Fr ตามสมการหน้า -12-"""
+    if g == 0 or y_0 == 0:
+        return 0
+    # Fr = v / sqrt(g * y_0)
+    return v / np.sqrt(g * y_0)
+
+def calculate_dy_dx(S_0, S_f, Fr):
+    """คำนวณ dy/dx ตามสมการหน้า -11-"""
+    if (1 - Fr**2) == 0:
+        return 0
+    # dy/dx = (S_0 - S_f) / (1 - Fr^2)
+    return (S_0 - S_f) / (1 - Fr**2)
+
+def run_simulation(dy_dx, y_initial, z_bed, delta_x, num_steps):
+    """
+    รันการจำลองตามวิธีของ Euler และคำนวณระดับน้ำ (W)
+    (สมการ 2.4.3 และ 2.5)
+    """
+    y_depths = [y_initial]
+    W_levels = [y_initial + z_bed]
+    y_current = y_initial
     
-    def __init__(self):
-        """Initialize the application."""
-        self._setup_page_config()
-        self.input_components = InputComponents()
-        self.display_components = DisplayComponents()
-        self.validator = ParameterValidator()
+    for i in range(1, num_steps + 1):
+        # สมการ Euler's method (y_i = y_{i-1} + (dy/dx) * Δx)
+        y_next = y_current + (dy_dx * delta_x)
+        
+        # สมการระดับน้ำ (W_n = y_n + z)
+        W_next = y_next + z_bed
+        
+        y_depths.append(y_next)
+        W_levels.append(W_next)
+        y_current = y_next
+        
+    return y_depths, W_levels
+
+# --- 3. ส่วนแสดงผลของ Streamlit ---
+
+st.set_page_config(page_title="แบบจำลองคาดการณ์น้ำท่วม (คำนวณสด)", layout="wide")
+st.title("🌊 แบบจำลองคาดการณ์ระดับน้ำและน้ำท่วม")
+st.write("แอปนี้จะคำนวณค่าต่างๆ สดจากข้อมูลดิบ (ตารางที่ 1) และเปรียบเทียบกับผลลัพธ์เดิม")
+
+# --- 4. Input Panel (แถบด้านข้าง) ---
+
+st.sidebar.header("⚙️ 1. เลือกข้อมูลตั้งต้น")
+
+# 4.1 เลือกปีข้อมูล
+selected_year = st.sidebar.selectbox(
+    "เลือกปีข้อมูลดิบ (จากตารางที่ 1)",
+    (2564, 2565, 2566, 2567)
+)
+raw_data = RAW_DATA_TABLE_1[selected_year]
+
+with st.sidebar.expander(f"แสดงข้อมูลดิบปี {selected_year}"):
+    st.json(raw_data)
+
+# 4.2 ป้อนระดับตลิ่ง (ค่าสำคัญในการเทียบ)
+st.sidebar.header("⚙️ 2. ป้อนระดับตลิ่ง")
+riverbank_level = st.sidebar.number_input(
+    "**ป้อนระดับตลิ่ง (Riverbank Level) (เมตร)**",
+    value=2.0,  # ตั้งค่าเริ่มต้นสมมติ
+    min_value=0.0,
+    format="%.3f",
+    help="ใส่ระดับตลิ่งจริงเพื่อใช้เป็นเกณฑ์ตัดสินน้ำท่วม (ตามขั้นตอน 3.2)"
+)
+
+# 4.3 (Optional) ตั้งค่าคงที่
+with st.sidebar.expander("แสดง/แก้ไขค่าคงที่ของแบบจำลอง"):
+    g = st.number_input("ค่า G (เมตร/วินาที^2)", value=G_CONSTANT, format="%.3f")
+    z = st.number_input("ระดับท้องร่อง (z) (เมตร)", value=Z_BED, format="%.3f")
+    dx = st.number_input("ระยะห่างแต่ละช่วง (Δx) (เมตร)", value=DELTA_X)
+    n = st.number_input("จำนวนช่วง (n)", value=NUM_STEPS)
+    y_0 = st.number_input("ความลึกเริ่มต้น (y₀) (เมตร)", value=raw_data['y_0'], format="%.3f")
+
+
+# --- 5. Calculation Panel (หน้าจอหลัก) ---
+
+st.header(f"📊 ผลการคำนวณสำหรับปี {selected_year}")
+
+# สร้าง Tabs เพื่อเปรียบเทียบ
+tab1 = st.tabs([
+    "วิธีที่ 1: คำนวณสดทั้งหมด", 
+])
+
+# --- แท็บที่ 1: คำนวณสด ---
+# with tab1:
+st.subheader("วิธีที่ 1: คำนวณสดจากข้อมูลดิบ (ตารางที่ 1)")
+st.markdown("---")
+
+# 1.1 คำนวณค่ากลาง (Sf, Fr, dy/dx) สด
+st.markdown("#### ขั้นตอนที่ 1.1: คำนวณค่ากลาง ($S_f$, $Fr$, $\\frac{{dy}}{{dx}}$)")
+S_f_live = calculate_Sf(raw_data['n'], raw_data['Q'], raw_data['A'], raw_data['R'])
+Fr_live = calculate_Fr(raw_data['v'], g, y_0) # <-- ใช้ y_0 จาก sidebar
+dy_dx_live = calculate_dy_dx(raw_data['S_0'], S_f_live, Fr_live)
+
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    st.subheader("$S_f$ (ความชันฯ)")
+    st.latex(r"S_f = \left( \frac{n \times Q}{A \times R^{2/3}} \right)^2")
     
-    def _setup_page_config(self):
-        """Configure Streamlit page settings."""
-        st.set_page_config(
-            page_title=config.PAGE_TITLE,
-            page_icon=config.PAGE_ICON,
-            layout=config.LAYOUT,
-            initial_sidebar_state=config.INITIAL_SIDEBAR_STATE
-        )
+    # FIX: ใช้ st.latex และ .format() เพื่อหลีกเลี่ยง SyntaxError
+    sf_latex_template = r"S_f = \left( \frac{{ {n_val} \times {q_val} }}{{ {a_val} \times {r_val:.3f}^{{{{2/3}}}} }} \right)^2"
+    st.latex(sf_latex_template.format(
+        n_val=raw_data['n'],
+        q_val=raw_data['Q'],
+        a_val=raw_data['A'],
+        r_val=raw_data['R']
+    ))
+    st.metric("ผลลัพธ์ $S_f$ (คำนวณสด)", f"{S_f_live:e}")
+
+with c2:
+    st.subheader("$Fr$ (Froude Number)")
+    st.latex(r"Fr = \frac{v}{\sqrt{g \times y_0}}")
     
-    def run(self):
-        """Run the main application."""
-        # Render header and model explanation
-        self.display_components.render_header()
-        self.display_components.render_model_explanation()
-        
-        # Get user input from sidebar
-        parameters = self.input_components.render_sidebar()
-        
-        # Add calculate button
-        st.sidebar.markdown("---")
-        calculate_button = st.sidebar.button("🧮 คำนวณระดับน้ำ", type="primary")
-        
-        # Validate parameters
-        is_valid, errors = self.validator.validate_parameters(parameters)
-        has_warnings, warnings = self.validator.validate_physical_constraints(parameters)
-        
-        # Display validation errors
-        if not is_valid:
-            st.sidebar.error("❌ ข้อผิดพลาดในการตั้งค่า:")
-            for error in errors:
-                st.sidebar.error(f"• {error}")
-            return
-        
-        # Display warnings
-        if not has_warnings:
-            st.sidebar.warning("⚠️ คำเตือน:")
-            for warning in warnings:
-                st.sidebar.warning(f"• {warning}")
-        
-        # Perform calculations when button is clicked or on first load
-        if calculate_button or 'calculated' not in st.session_state:
-            st.session_state.calculated = True
-            
-            try:
-                # Initialize solver and calculate results
-                solver = SaintVenantSolver(parameters)
-                results = solver.solve_euler_method()
-                flood_statuses = solver.get_flood_status_segments(results)
-                
-                # Display results
-                self.display_components.render_metrics(results, parameters)
-                self.display_components.render_flood_conclusion(results, parameters)
-                self.display_components.render_results_table(results, flood_statuses)
-                self.display_components.render_graph(results, parameters)
-                self.display_components.render_calculation_details(parameters, results)
-                
-            except Exception as e:
-                st.error(f"❌ เกิดข้อผิดพลาดในการคำนวณ: {str(e)}")
-                st.info("กรุณาตรวจสอบค่าพารามิเตอร์และลองใหม่อีกครั้ง")
-        
-        # Render footer
-        self.display_components.render_footer()
+    # FIX: (ต้นตอของ SyntaxError) ใช้ st.latex และ .format()
+    fr_latex_template = r"Fr = \frac{{ {v_val} }}{{\sqrt{{ {g_val} \times {y_val} }}}}"
+    st.latex(fr_latex_template.format(
+        v_val=raw_data['v'],
+        g_val=g,
+        y_val=y_0
+    ))
+    st.metric("ผลลัพธ์ $Fr$ (คำนวณสด)", f"{Fr_live:.6f}")
+
+with c3:
+    st.subheader("$\\frac{{dy}}{{dx}}$ (ความชันผิวน้ำ)")
+    st.latex(r"\frac{dy}{dx} = \frac{S_0 - S_f}{1 - Fr^2}")
+    
+    # FIX: ใช้ st.latex และ .format() - double braces for dy and dx
+    dydx_latex_template = r"\frac{{dy}}{{dx}} = \frac{{ {s0_val} - {sf_val:.2e} }}{{ 1 - {fr_val:.6f}^2 }}"
+    st.latex(dydx_latex_template.format(
+        s0_val=raw_data['S_0'],
+        sf_val=S_f_live,
+        fr_val=Fr_live
+    ))
+    st.metric("ผลลัพธ์ $\\frac{{dy}}{{dx}}$ (คำนวณสด)", f"{dy_dx_live:.8f}")
 
 
-def main():
-    """Main entry point."""
-    app = FloodGuardApp()
-    app.run()
+# 1.2 รัน Euler's method ด้วยค่า dy/dx ที่คำนวณสด
+st.markdown("---")
+st.markdown("#### ขั้นตอนที่ 1.2: รันแบบจำลอง Euler ด้วยค่า $\\frac{{dy}}{{dx}}$ ที่คำนวณสด")
+y_depths_live, W_levels_live = run_simulation(dy_dx_live, y_0, z, dx, n)
+W_average_live = np.mean(W_levels_live[1:])
+
+# 1.3 สรุปผลลัพธ์
+st.markdown("#### 🎯 ขั้นตอนที่ 1.3: ผลการคาดการณ์ (วิธีคำนวณสด)")
+c1, c2 = st.columns(2)
+c1.metric(
+    label="ระดับน้ำเฉลี่ยที่คำนวณได้ (W̄)",
+    value=f"{W_average_live:.4f} เมตร",
+    help="ค่าเฉลี่ยของ W₁ ถึง W₁₄ (ตามสมการ 2.6)"
+)
+c2.metric(
+    label="ระดับตลิ่ง (เกณฑ์ตัดสิน)",
+    value=f"{riverbank_level:.4f} เมตร",
+    help="ค่าที่คุณป้อนเข้ามาเพื่อใช้เปรียบเทียบ"
+)
+
+if W_average_live > riverbank_level:
+    st.error(f"**🚨 สถานการณ์: มีโอกาสเกิดน้ำท่วม (FLOODING)**")
+    st.write(f"เนื่องจากระดับน้ำเฉลี่ยที่คำนวณได้ ({W_average_live:.4f} ม.) **สูงกว่า** ระดับตลิ่ง ({riverbank_level:.4f} ม.)")
+else:
+    st.success(f"**✅ สถานการณ์: ปกติ (NO FLOODING)**")
+
+# 1.4 แสดงกราฟและตาราง
+st.markdown("---")
+st.subheader("กราฟและตาราง (วิธีคำนวณสด)")
+st.markdown("กราฟแสดงระดับน้ำ ($W_i$) ที่คำนวณได้ในแต่ละช่วง ($i$) เทียบกับระดับตลิ่ง")
+chart_df_live = pd.DataFrame({
+    'ระดับน้ำที่คำนวณได้ (W_i)': W_levels_live,
+    'ระดับตลิ่ง (Riverbank)': [riverbank_level] * (n + 1)
+})
+st.line_chart(chart_df_live.set_index(pd.Index(list(range(n + 1)), name="ช่วงที่ (i)")))
+
+st.markdown("#### สูตรที่ใช้ในตาราง (Euler's Method)")
+# FIX: Escape braces properly in markdown
+euler_exp_md = r"""
+การคำนวณในตารางใช้ค่า:
+- $\frac{{dy}}{{dx}} = {dydx_val:.8f}$
+- $\Delta x = {dx_val}$ เมตร
+- $z = {z_val}$ เมตร (ระดับท้องร่อง)
+"""
+st.markdown(euler_exp_md.format(
+    dydx_val=dy_dx_live,
+    dx_val=dx,
+    z_val=z
+))
+st.latex(r"y_i = y_{i-1} + \left(\frac{dy}{dx}\right) \times \Delta x \quad \text{(สำหรับ i = 1 ถึง 14)}")
+st.latex(r"W_i = y_i + z")
 
 
-if __name__ == "__main__":
-    main()
+df_live = pd.DataFrame({
+    "ช่วงที่ (i)": list(range(n + 1)),
+    "ความลึก (y_i) (เมตร)": y_depths_live,
+    "ระดับน้ำ (W_i = y_i + z) (เมตร)": W_levels_live
+})
+st.dataframe(df_live.style.format("{:.4f}", subset=["ความลึก (y_i) (เมตร)", "ระดับน้ำ (W_i = y_i + z) (เมตร)"]))
