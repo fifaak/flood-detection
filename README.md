@@ -62,6 +62,7 @@ flood-detection/
 
 - React Native
 - Expo
+- **Gluestack UI** - Modern component library
 - react-native-chart-kit (สำหรับกราฟ)
 - react-native-picker-select (สำหรับ dropdown)
 

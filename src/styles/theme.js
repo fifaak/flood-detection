@@ -1,18 +1,28 @@
 export const colors = {
-  primary: '#2196F3',
-  secondary: '#03A9F4',
-  success: '#4caf50',
-  danger: '#f44336',
-  warning: '#ff9800',
-  background: '#f5f5f5',
-  white: '#ffffff',
+  primary: '#0EA5E9',
+  primaryDark: '#0284C7',
+  primaryLight: '#38BDF8',
+  secondary: '#8B5CF6',
+  success: '#10B981',
+  successLight: '#D1FAE5',
+  danger: '#EF4444',
+  dangerLight: '#FEE2E2',
+  warning: '#F59E0B',
+  background: '#F8FAFC',
+  backgroundDark: '#F1F5F9',
+  white: '#FFFFFF',
   text: {
-    primary: '#333333',
-    secondary: '#666666',
-    light: '#999999',
+    primary: '#0F172A',
+    secondary: '#475569',
+    light: '#94A3B8',
   },
-  border: '#dddddd',
+  border: '#E2E8F0',
+  borderLight: '#F1F5F9',
   shadow: '#000000',
+  gradient: {
+    start: '#0EA5E9',
+    end: '#8B5CF6',
+  },
 };
 
 export const spacing = {
@@ -52,14 +62,29 @@ export const shadows = {
     elevation: 2,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
   },
   medium: {
-    elevation: 3,
+    elevation: 4,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+  },
+  large: {
+    elevation: 8,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+  },
+};
+
+export const animations = {
+  duration: {
+    fast: 200,
+    normal: 300,
+    slow: 500,
   },
 };

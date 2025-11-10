@@ -1,43 +1,75 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '../styles/theme';
+import { Box, VStack, HStack, Text, Divider, Center } from '@gluestack-ui/themed';
+
+const InfoItem = ({ icon, text }) => (
+  <HStack space="md" alignItems="center" py="$2">
+    <Center
+      w="$10"
+      h="$10"
+      borderRadius="$full"
+      bg="$backgroundLight100"
+    >
+      <Text fontSize="$xl">{icon}</Text>
+    </Center>
+    <Text fontSize="$md" color="$textDark700" flex={1} lineHeight="$md">
+      {text}
+    </Text>
+  </HStack>
+);
 
 export const InfoSection = ({ selectedYear, numSteps, deltaX }) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>ข้อมูลเพิ่มเติม</Text>
-      <Text style={styles.text}>
-        • การคาดการณ์นี้ใช้ข้อมูลจากปี {selectedYear}
-      </Text>
-      <Text style={styles.text}>
-        • คำนวณระดับน้ำในระยะทาง {(numSteps * deltaX).toLocaleString()} เมตร
-      </Text>
-      <Text style={styles.text}>
-        • แบ่งเป็น {numSteps} ช่วง ช่วงละ {deltaX} เมตร
-      </Text>
-    </View>
+    <Box 
+      bg="$white" 
+      mx="$4" 
+      mb="$8" 
+      p="$5" 
+      borderRadius="$xl"
+      shadowColor="$black"
+      shadowOpacity={0.08}
+      shadowRadius={8}
+      elevation={4}
+    >
+      <HStack space="sm" alignItems="center" mb="$4" pb="$3">
+        <Text fontSize="$2xl">ℹ️</Text>
+        <Text fontSize="$xl" fontWeight="$bold" color="$textDark950">
+          รายละเอียดการคำนวณ
+        </Text>
+      </HStack>
+      
+      <Divider mb="$4" />
+      
+      <VStack space="md">
+        <InfoItem 
+          icon="📅"
+          text={`ใช้ข้อมูลอุทกวิทยาจากปี ${selectedYear}`}
+        />
+        <InfoItem 
+          icon="📏"
+          text={`คำนวณระยะทางรวม ${(numSteps * deltaX).toLocaleString()} เมตร`}
+        />
+        <InfoItem 
+          icon="📍"
+          text={`แบ่งเป็น ${numSteps} ช่วง ช่วงละ ${deltaX.toLocaleString()} เมตร`}
+        />
+        <InfoItem 
+          icon="🔬"
+          text="ใช้วิธี Euler's Method ในการคำนวณ"
+        />
+      </VStack>
+
+      <Divider my="$4" />
+
+      <Box alignItems="center">
+        <Text 
+          fontSize="$xs" 
+          color="$textDark500"
+          textAlign="center"
+          fontStyle="italic"
+        >
+          ข้อมูลจากแบบจำลองทางคณิตศาสตร์ Saint-Venant
+        </Text>
+      </Box>
+    </Box>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.white,
-    margin: spacing.md,
-    marginBottom: spacing.xxl,
-    padding: spacing.lg,
-    borderRadius: borderRadius.md,
-    ...shadows.small,
-  },
-  title: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.md,
-    color: colors.text.primary,
-  },
-  text: {
-    fontSize: fontSize.sm,
-    color: colors.text.secondary,
-    marginBottom: spacing.sm,
-    lineHeight: 20,
-  },
-});

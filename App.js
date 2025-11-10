@@ -1,92 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, SafeAreaView } from 'react-native';
-import { 
-  Header, 
-  InputSection, 
-  StatusCard, 
-  MetricsGrid, 
-  WaterLevelChart, 
-  InfoSection 
-} from './src/components';
-import { calculateFloodPrediction } from './src/utils/calculations';
-import { 
-  RAW_DATA, 
-  YEAR_OPTIONS, 
-  RIVERBANK_OPTIONS,
-  G_CONSTANT,
-  Z_BED,
-  DELTA_X,
-  NUM_STEPS
-} from './src/constants/floodData';
-import { colors } from './src/styles/theme';
+import React, { useEffect } from 'react';
+import { StatusBar } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { GluestackUIProvider, Box } from '@gluestack-ui/themed';
+import { config } from '@gluestack-ui/config';
+import { useFonts, Prompt_400Regular, Prompt_500Medium, Prompt_600SemiBold, Prompt_700Bold } from '@expo-google-fonts/prompt';
+import * as SplashScreen from 'expo-splash-screen';
+import { SettingsScreen, ResultsScreen } from './src/screens';
+
+const Stack = createNativeStackNavigator();
+
+// Keep splash screen visible while loading fonts
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const [selectedYear, setSelectedYear] = useState(2564);
-  const [riverbankLevel, setRiverbankLevel] = useState(2.0);
-  const [results, setResults] = useState(null);
+  // Load Prompt font
+  const [fontsLoaded] = useFonts({
+    Prompt_400Regular,
+    Prompt_500Medium,
+    Prompt_600SemiBold,
+    Prompt_700Bold,
+  });
 
   useEffect(() => {
-    const rawData = RAW_DATA[selectedYear];
-    const prediction = calculateFloodPrediction(
-      rawData,
-      G_CONSTANT,
-      Z_BED,
-      DELTA_X,
-      NUM_STEPS,
-      riverbankLevel
-    );
-    setResults(prediction);
-  }, [selectedYear, riverbankLevel]);
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <Header />
-        
-        <InputSection
-          selectedYear={selectedYear}
-          onYearChange={setSelectedYear}
-          riverbankLevel={riverbankLevel}
-          onRiverbankChange={setRiverbankLevel}
-          yearOptions={YEAR_OPTIONS}
-          riverbankOptions={RIVERBANK_OPTIONS}
-        />
-
-        {results && (
-          <>
-            <StatusCard isFlooding={results.isFlooding} />
-            
-            <MetricsGrid
-              averageLevel={results.W_average}
-              riverbankLevel={riverbankLevel}
-              maxLevel={results.maxLevel}
-              numSteps={NUM_STEPS}
-            />
-
-            <WaterLevelChart
-              waterLevels={results.W_levels}
-              riverbankLevel={riverbankLevel}
-              numSteps={NUM_STEPS}
-            />
-
-            <InfoSection
-              selectedYear={selectedYear}
-              numSteps={NUM_STEPS}
-              deltaX={DELTA_X}
-            />
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+    <GluestackUIProvider config={config}>
+      <NavigationContainer>
+        <StatusBar barStyle="light-content" backgroundColor="#0EA5E9" />
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+            animation: 'slide_from_right',
+          }}
+        >
+          <Stack.Screen 
+            name="Settings" 
+            component={SettingsScreen}
+            options={{
+              title: 'ตั้งค่า',
+            }}
+          />
+          <Stack.Screen 
+            name="Results" 
+            component={ResultsScreen}
+            options={{
+              title: 'ผลการวิเคราะห์',
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </GluestackUIProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-});

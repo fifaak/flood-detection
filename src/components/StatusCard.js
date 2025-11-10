@@ -1,58 +1,84 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, spacing, fontSize, fontWeight, borderRadius, shadows } from '../styles/theme';
+import { Animated } from 'react-native';
+import { Box, VStack, HStack, Text, Badge, BadgeText } from '@gluestack-ui/themed';
 
 export const StatusCard = ({ isFlooding }) => {
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    if (isFlooding) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [isFlooding]);
+
   return (
-    <View style={[
-      styles.container,
-      isFlooding ? styles.flooding : styles.safe
-    ]}>
-      <Text style={styles.icon}>
-        {isFlooding ? '🚨' : '✅'}
-      </Text>
-      <Text style={styles.title}>
-        {isFlooding ? 'มีโอกาสเกิดน้ำท่วม' : 'สถานการณ์ปกติ'}
-      </Text>
-      <Text style={styles.description}>
-        {isFlooding 
-          ? 'ระดับน้ำสูงกว่าระดับตลิ่ง' 
-          : 'ระดับน้ำอยู่ในเกณฑ์ปกติ'}
-      </Text>
-    </View>
+    <Box 
+      bg="$white" 
+      mx="$4" 
+      my="$3" 
+      p="$6" 
+      borderRadius="$xl"
+      borderLeftWidth={6}
+      borderLeftColor={isFlooding ? "$red500" : "$green500"}
+      shadowColor="$black"
+      shadowOpacity={0.12}
+      shadowRadius={16}
+      elevation={8}
+    >
+      <VStack space="md" alignItems="center">
+        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+          <Text fontSize={64}>
+            {isFlooding ? '🚨' : '✅'}
+          </Text>
+        </Animated.View>
+        
+        <Badge 
+          size="md" 
+          variant="solid" 
+          action={isFlooding ? "error" : "success"}
+          borderRadius="$full"
+        >
+          <BadgeText textTransform="uppercase" fontWeight="$bold" letterSpacing={1}>
+            {isFlooding ? 'เตือนภัย' : 'ปลอดภัย'}
+          </BadgeText>
+        </Badge>
+        
+        <VStack space="xs" alignItems="center">
+          <Text 
+            fontSize="$2xl" 
+            fontWeight="$bold" 
+            color="$textDark950"
+            textAlign="center"
+          >
+            {isFlooding ? 'มีโอกาสเกิดน้ำท่วม' : 'สถานการณ์ปกติ'}
+          </Text>
+          
+          <Text 
+            fontSize="$md" 
+            color="$textDark600"
+            textAlign="center"
+            px="$4"
+            lineHeight="$md"
+          >
+            {isFlooding 
+              ? 'ระดับน้ำเฉลี่ยสูงกว่าระดับตลิ่ง กรุณาเตรียมพร้อมรับมือ' 
+              : 'ระดับน้ำอยู่ในเกณฑ์ปกติ ไม่มีความเสี่ยง'}
+          </Text>
+        </VStack>
+      </VStack>
+    </Box>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    margin: spacing.md,
-    padding: spacing.xl,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    ...shadows.medium,
-  },
-  flooding: {
-    backgroundColor: '#ffebee',
-    borderLeftWidth: 5,
-    borderLeftColor: colors.danger,
-  },
-  safe: {
-    backgroundColor: '#e8f5e9',
-    borderLeftWidth: 5,
-    borderLeftColor: colors.success,
-  },
-  icon: {
-    fontSize: fontSize.huge,
-    marginBottom: spacing.sm,
-  },
-  title: {
-    fontSize: fontSize.xxl,
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.xs,
-    color: colors.text.primary,
-  },
-  description: {
-    fontSize: fontSize.md,
-    color: colors.text.secondary,
-  },
-});
