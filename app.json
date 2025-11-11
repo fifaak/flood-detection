@@ -12,10 +12,19 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.floodprediction.app"
+      "package": "com.floodprediction.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0EA5E9"
+      },
+      "permissions": []
     },
     "web": {
       "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b28c7d88-2d9d-4419-8e33-2494c272ba21"
+      }
     }
   }
 }

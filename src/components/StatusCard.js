@@ -1,6 +1,6 @@
 import React from 'react';
-import { Animated } from 'react-native';
-import { Box, VStack, HStack, Text, Badge, BadgeText } from '@gluestack-ui/themed';
+import { Animated, StyleSheet, View } from 'react-native';
+import { Card, Text, Chip } from 'react-native-paper';
 
 export const StatusCard = ({ isFlooding }) => {
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
@@ -25,60 +25,88 @@ export const StatusCard = ({ isFlooding }) => {
   }, [isFlooding]);
 
   return (
-    <Box 
-      bg="$white" 
-      mx="$4" 
-      my="$3" 
-      p="$6" 
-      borderRadius="$xl"
-      borderLeftWidth={6}
-      borderLeftColor={isFlooding ? "$red500" : "$green500"}
-      shadowColor="$black"
-      shadowOpacity={0.12}
-      shadowRadius={16}
-      elevation={8}
+    <Card 
+      style={[
+        styles.card,
+        { borderLeftColor: isFlooding ? '#EF4444' : '#10B981' }
+      ]} 
+      elevation={4}
     >
-      <VStack space="md" alignItems="center">
+      <Card.Content style={styles.content}>
         <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-          <Text fontSize={64}>
+          <Text variant="displayLarge" style={styles.emoji}>
             {isFlooding ? '🚨' : '✅'}
           </Text>
         </Animated.View>
         
-        <Badge 
-          size="md" 
-          variant="solid" 
-          action={isFlooding ? "error" : "success"}
-          borderRadius="$full"
+        <Chip 
+          mode="flat"
+          style={[
+            styles.chip,
+            { backgroundColor: isFlooding ? '#FEE2E2' : '#D1FAE5' }
+          ]}
+          textStyle={[
+            styles.chipText,
+            { color: isFlooding ? '#991B1B' : '#065F46' }
+          ]}
         >
-          <BadgeText textTransform="uppercase" fontWeight="$bold" letterSpacing={1}>
-            {isFlooding ? 'เตือนภัย' : 'ปลอดภัย'}
-          </BadgeText>
-        </Badge>
+          {isFlooding ? 'เตือนภัย' : 'ปลอดภัย'}
+        </Chip>
         
-        <VStack space="xs" alignItems="center">
-          <Text 
-            fontSize="$2xl" 
-            fontWeight="$bold" 
-            color="$textDark950"
-            textAlign="center"
-          >
+        <View style={styles.textContainer}>
+          <Text variant="headlineMedium" style={styles.title}>
             {isFlooding ? 'มีโอกาสเกิดน้ำท่วม' : 'สถานการณ์ปกติ'}
           </Text>
           
-          <Text 
-            fontSize="$md" 
-            color="$textDark600"
-            textAlign="center"
-            px="$4"
-            lineHeight="$md"
-          >
+          <Text variant="bodyMedium" style={styles.description}>
             {isFlooding 
               ? 'ระดับน้ำเฉลี่ยสูงกว่าระดับตลิ่ง กรุณาเตรียมพร้อมรับมือ' 
               : 'ระดับน้ำอยู่ในเกณฑ์ปกติ ไม่มีความเสี่ยง'}
           </Text>
-        </VStack>
-      </VStack>
-    </Box>
+        </View>
+      </Card.Content>
+    </Card>
   );
 };
+
+const styles = StyleSheet.create({
+  card: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+    backgroundColor: '#fff',
+    borderLeftWidth: 6,
+  },
+  content: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    gap: 16,
+  },
+  emoji: {
+    fontSize: 64,
+  },
+  chip: {
+    borderRadius: 20,
+  },
+  chipText: {
+    fontFamily: 'Prompt_700Bold',
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  textContainer: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  title: {
+    fontFamily: 'Prompt_700Bold',
+    color: '#0F172A',
+    textAlign: 'center',
+  },
+  description: {
+    fontFamily: 'Prompt_400Regular',
+    color: '#475569',
+    textAlign: 'center',
+    paddingHorizontal: 16,
+    lineHeight: 22,
+  },
+});

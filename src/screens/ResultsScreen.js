@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, TouchableOpacity } from 'react-native';
-import { Box, VStack, HStack, Text, Button, ButtonText } from '@gluestack-ui/themed';
+import { ScrollView, View, StyleSheet } from 'react-native';
+import { Button, Text, Chip } from 'react-native-paper';
 import { 
   StatusCard, 
   MetricsGrid, 
@@ -34,96 +34,115 @@ export const ResultsScreen = ({ route, navigation }) => {
   }, [selectedYear, riverbankLevel]);
 
   return (
-    <Box flex={1} bg="$backgroundLight50">
+    <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <VStack space="md">
-          {/* Header Section */}
-          <Box bg="$blue500" pt="$12" pb="$6" px="$4">
-            <VStack space="md" alignItems="center">
-              <Text 
-                fontSize="$3xl" 
-                fontWeight="$bold" 
-                color="$white"
-                textAlign="center"
-                fontFamily="Prompt_700Bold"
+        {/* Header Section */}
+        <View style={styles.header}>
+          <Text variant="displaySmall" style={styles.headerTitle}>
+            ผลการวิเคราะห์
+          </Text>
+          <View style={styles.headerChips}>
+            <Chip 
+              mode="flat" 
+              style={styles.chip}
+              textStyle={styles.chipText}
+            >
+              ปี {selectedYear}
+            </Chip>
+            <Chip 
+              mode="flat" 
+              style={styles.chip}
+              textStyle={styles.chipText}
+            >
+              ตลิ่ง {riverbankLevel.toFixed(1)} ม.
+            </Chip>
+          </View>
+        </View>
+
+        {results && (
+          <>
+            <StatusCard isFlooding={results.isFlooding} />
+            
+            <MetricsGrid
+              averageLevel={results.W_average}
+              riverbankLevel={riverbankLevel}
+              maxLevel={results.maxLevel}
+              numSteps={NUM_STEPS}
+            />
+
+            <WaterLevelChart
+              waterLevels={results.W_levels}
+              riverbankLevel={riverbankLevel}
+              numSteps={NUM_STEPS}
+            />
+
+            <InfoSection
+              selectedYear={selectedYear}
+              numSteps={NUM_STEPS}
+              deltaX={DELTA_X}
+            />
+
+            {/* Action Button */}
+            <View style={styles.buttonContainer}>
+              <Button
+                mode="contained"
+                onPress={() => navigation.goBack()}
+                style={styles.button}
+                contentStyle={styles.buttonContent}
+                labelStyle={styles.buttonLabel}
+                elevation={4}
               >
-                ผลการวิเคราะห์
-              </Text>
-              <HStack space="sm" alignItems="center">
-                <Box bg="rgba(255, 255, 255, 0.2)" px="$3" py="$1" borderRadius="$full">
-                  <Text 
-                    fontSize="$sm" 
-                    color="$white"
-                    fontFamily="Prompt_500Medium"
-                  >
-                    ปี {selectedYear}
-                  </Text>
-                </Box>
-                <Box bg="rgba(255, 255, 255, 0.2)" px="$3" py="$1" borderRadius="$full">
-                  <Text 
-                    fontSize="$sm" 
-                    color="$white"
-                    fontFamily="Prompt_500Medium"
-                  >
-                    ตลิ่ง {riverbankLevel.toFixed(1)} ม.
-                  </Text>
-                </Box>
-              </HStack>
-            </VStack>
-          </Box>
-
-          {results && (
-            <>
-              <StatusCard isFlooding={results.isFlooding} />
-              
-              <MetricsGrid
-                averageLevel={results.W_average}
-                riverbankLevel={riverbankLevel}
-                maxLevel={results.maxLevel}
-                numSteps={NUM_STEPS}
-              />
-
-              <WaterLevelChart
-                waterLevels={results.W_levels}
-                riverbankLevel={riverbankLevel}
-                numSteps={NUM_STEPS}
-              />
-
-              <InfoSection
-                selectedYear={selectedYear}
-                numSteps={NUM_STEPS}
-                deltaX={DELTA_X}
-              />
-
-              {/* Action Button */}
-              <Box mx="$4" mb="$8">
-                <Button
-                  size="lg"
-                  bg="$blue500"
-                  borderRadius="$xl"
-                  onPress={() => navigation.goBack()}
-                  h="$14"
-                  shadowColor="$blue500"
-                  shadowOpacity={0.3}
-                  shadowRadius={12}
-                  elevation={8}
-                >
-                  <HStack space="sm" alignItems="center">
-                    <Text fontSize="$lg">🔄</Text>
-                    <ButtonText 
-                      fontSize="$lg" 
-                      fontWeight="$bold"
-                      fontFamily="Prompt_700Bold"
-                    >
-                      คำนวณใหม่
-                    </ButtonText>
-                  </HStack>
-                </Button>
-              </Box>
-            </>
-          )}
-        </VStack>
+                🔄  คำนวณใหม่
+              </Button>
+            </View>
+          </>
+        )}
       </ScrollView>
-    </Box>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  header: {
+    backgroundColor: '#0EA5E9',
+    paddingTop: 48,
+    paddingBottom: 24,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    gap: 16,
+  },
+  headerTitle: {
+    fontFamily: 'Prompt_700Bold',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  headerChips: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  chip: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  chipText: {
+    fontFamily: 'Prompt_500Medium',
+    color: '#fff',
+  },
+  buttonContainer: {
+    marginHorizontal: 16,
+    marginBottom: 32,
+  },
+  button: {
+    borderRadius: 12,
+  },
+  buttonContent: {
+    height: 56,
+  },
+  buttonLabel: {
+    fontFamily: 'Prompt_700Bold',
+    fontSize: 16,
+  },
+});

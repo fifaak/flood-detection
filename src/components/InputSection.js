@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, Platform } from 'react-native';
-import { Box, VStack, HStack, Text, Divider, Input, InputField, Slider, SliderTrack, SliderFilledTrack, SliderThumb } from '@gluestack-ui/themed';
-import RNPickerSelect from 'react-native-picker-select';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { Card, Text, Divider, TextInput, Chip } from 'react-native-paper';
+import Slider from '@react-native-community/slider';
 
 export const InputSection = ({ 
   selectedYear, 
@@ -37,251 +37,378 @@ export const InputSection = ({
   };
 
   return (
-    <Box bg="$white" mx="$4" mt="$4" p="$5" borderRadius="$xl" shadowColor="$black" shadowOpacity={0.08} shadowRadius={8} elevation={4}>
-      <HStack space="sm" alignItems="center" mb="$4" pb="$3">
-        <Text fontSize="$2xl">⚙️</Text>
-        <Text fontSize="$xl" fontWeight="$bold" color="$textDark950">
-          ตั้งค่าการคำนวณ
-        </Text>
-      </HStack>
-      
-      <Divider mb="$4" />
-      
-      <VStack space="lg">
+    <Card style={styles.card} elevation={2}>
+      <Card.Content>
+        <View style={styles.header}>
+          <Text variant="displaySmall" style={styles.icon}>⚙️</Text>
+          <Text variant="titleLarge" style={styles.title}>ตั้งค่าการคำนวณ</Text>
+        </View>
+        
+        <Divider style={styles.divider} />
+        
         {/* Year Selection */}
-        <VStack space="sm">
-          <HStack space="sm" alignItems="center" mb="$2">
-            <Text fontSize="$lg">📅</Text>
-            <Text fontSize="$md" fontWeight="$medium" color="$textDark700">
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text variant="bodyMedium" style={styles.sectionIcon}>📅</Text>
+            <Text variant="titleMedium" style={styles.sectionTitle}>
               ปีข้อมูลอุทกวิทยา
             </Text>
-          </HStack>
+          </View>
           
-          <HStack space="sm" flexWrap="wrap">
+          <View style={styles.yearGrid}>
             {yearOptions.map((option) => (
               <TouchableOpacity
                 key={option.value}
                 onPress={() => onYearChange(option.value)}
                 style={styles.yearButton}
               >
-                <Box
-                  bg={selectedYear === option.value ? "$blue500" : "$white"}
-                  px="$5"
-                  py="$4"
-                  borderRadius="$xl"
-                  borderWidth={2}
-                  borderColor={selectedYear === option.value ? "$blue500" : "$borderLight200"}
-                  shadowColor="$black"
-                  shadowOpacity={selectedYear === option.value ? 0.15 : 0.05}
-                  shadowRadius={selectedYear === option.value ? 8 : 4}
-                  elevation={selectedYear === option.value ? 4 : 2}
-                  minWidth="$24"
-                  alignItems="center"
+                <Card 
+                  style={[
+                    styles.yearCard,
+                    selectedYear === option.value && styles.yearCardSelected
+                  ]}
+                  elevation={selectedYear === option.value ? 4 : 1}
                 >
-                  <Text
-                    fontSize="$xs"
-                    fontWeight="$medium"
-                    color={selectedYear === option.value ? "$white" : "$textDark500"}
-                    mb="$1"
-                    opacity={0.8}
-                  >
-                    พ.ศ.
-                  </Text>
-                  <Text
-                    fontSize="$2xl"
-                    fontWeight="$bold"
-                    color={selectedYear === option.value ? "$white" : "$textDark950"}
-                  >
-                    {option.value}
-                  </Text>
-                  {selectedYear === option.value && (
-                    <Box
-                      position="absolute"
-                      top={-8}
-                      right={-8}
-                      bg="$green500"
-                      borderRadius="$full"
-                      p="$1"
-                      borderWidth={2}
-                      borderColor="$white"
+                  <Card.Content style={styles.yearContent}>
+                    <Text 
+                      variant="labelSmall" 
+                      style={[
+                        styles.yearLabel,
+                        selectedYear === option.value && styles.yearLabelSelected
+                      ]}
                     >
-                      <Text fontSize="$xs">✓</Text>
-                    </Box>
-                  )}
-                </Box>
+                      พ.ศ.
+                    </Text>
+                    <Text 
+                      variant="headlineMedium" 
+                      style={[
+                        styles.yearValue,
+                        selectedYear === option.value && styles.yearValueSelected
+                      ]}
+                    >
+                      {option.value}
+                    </Text>
+                    {selectedYear === option.value && (
+                      <View style={styles.checkmark}>
+                        <Text style={styles.checkmarkText}>✓</Text>
+                      </View>
+                    )}
+                  </Card.Content>
+                </Card>
               </TouchableOpacity>
             ))}
-          </HStack>
+          </View>
           
-          <Box bg="$blue50" p="$3" borderRadius="$lg" mt="$2">
-            <HStack space="sm" alignItems="center">
-              <Text fontSize="$md">ℹ️</Text>
-              <Text fontSize="$xs" color="$blue700" flex={1}>
-                เลือกปีข้อมูลที่ต้องการวิเคราะห์
-              </Text>
-            </HStack>
-          </Box>
-        </VStack>
+          <View style={styles.infoBox}>
+            <Text variant="bodyMedium" style={styles.infoIcon}>ℹ️</Text>
+            <Text variant="bodySmall" style={styles.infoText}>
+              เลือกปีข้อมูลที่ต้องการวิเคราะห์
+            </Text>
+          </View>
+        </View>
 
-        {/* Riverbank Level - Custom Input */}
-        <VStack space="sm">
-          <HStack space="sm" alignItems="center" justifyContent="space-between" mb="$1">
-            <HStack space="sm" alignItems="center">
-              <Text fontSize="$lg">📏</Text>
-              <Text fontSize="$md" fontWeight="$medium" color="$textDark700">
+        {/* Riverbank Level */}
+        <View style={styles.section}>
+          <View style={styles.levelHeader}>
+            <View style={styles.levelHeaderLeft}>
+              <Text variant="bodyMedium" style={styles.sectionIcon}>📏</Text>
+              <Text variant="titleMedium" style={styles.sectionTitle}>
                 ระดับตลิ่งอ้างอิง
               </Text>
-            </HStack>
-            <Box 
-              bg="$blue50" 
-              px="$3" 
-              py="$1" 
-              borderRadius="$full"
+            </View>
+            <Chip 
+              mode="flat" 
+              style={styles.valueChip}
+              textStyle={styles.valueChipText}
             >
-              <Text fontSize="$xl" fontWeight="$bold" color="$blue600">
-                {sliderValue.toFixed(1)} ม.
-              </Text>
-            </Box>
-          </HStack>
+              {sliderValue.toFixed(1)} ม.
+            </Chip>
+          </View>
 
           {/* Slider */}
-          <Box px="$2" py="$3">
+          <View style={styles.sliderContainer}>
             <Slider
               value={sliderValue}
-              onChange={handleSliderChange}
-              minValue={0.5}
-              maxValue={5.0}
+              onValueChange={handleSliderChange}
+              minimumValue={0.5}
+              maximumValue={5.0}
               step={0.1}
-              size="md"
-            >
-              <SliderTrack bg="$backgroundLight200">
-                <SliderFilledTrack bg="$blue500" />
-              </SliderTrack>
-              <SliderThumb 
-                bg="$blue500" 
-                borderWidth={3}
-                borderColor="$white"
-                shadowColor="$black"
-                shadowOpacity={0.2}
-                shadowRadius={4}
-                elevation={4}
-              />
-            </Slider>
-            <HStack justifyContent="space-between" mt="$2">
-              <Text fontSize="$xs" color="$textDark500">0.5 ม.</Text>
-              <Text fontSize="$xs" color="$textDark500">5.0 ม.</Text>
-            </HStack>
-          </Box>
+              minimumTrackTintColor="#0EA5E9"
+              maximumTrackTintColor="#E2E8F0"
+              thumbTintColor="#0EA5E9"
+              style={styles.slider}
+            />
+            <View style={styles.sliderLabels}>
+              <Text variant="labelSmall" style={styles.sliderLabel}>0.5 ม.</Text>
+              <Text variant="labelSmall" style={styles.sliderLabel}>5.0 ม.</Text>
+            </View>
+          </View>
 
           {/* Quick Presets */}
-          <VStack space="xs">
-            <Text fontSize="$sm" color="$textDark600" fontWeight="$medium">
+          <View style={styles.presetsSection}>
+            <Text variant="bodySmall" style={styles.presetsTitle}>
               ค่าที่แนะนำ:
             </Text>
-            <HStack space="sm" flexWrap="wrap">
+            <View style={styles.presetsGrid}>
               {[1.5, 2.0, 2.5, 3.0, 3.5, 4.0].map((preset) => (
                 <TouchableOpacity
                   key={preset}
                   onPress={() => handlePresetClick(preset)}
-                  style={styles.presetButton}
                 >
-                  <Box
-                    bg={sliderValue === preset ? "$blue500" : "$backgroundLight100"}
-                    px="$4"
-                    py="$2"
-                    borderRadius="$lg"
-                    borderWidth={2}
-                    borderColor={sliderValue === preset ? "$blue500" : "$borderLight200"}
+                  <Chip
+                    mode={sliderValue === preset ? 'flat' : 'outlined'}
+                    selected={sliderValue === preset}
+                    style={[
+                      styles.presetChip,
+                      sliderValue === preset && styles.presetChipSelected
+                    ]}
+                    textStyle={[
+                      styles.presetChipText,
+                      sliderValue === preset && styles.presetChipTextSelected
+                    ]}
                   >
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$semibold"
-                      color={sliderValue === preset ? "$white" : "$textDark700"}
-                    >
-                      {preset.toFixed(1)} ม.
-                    </Text>
-                  </Box>
+                    {preset.toFixed(1)} ม.
+                  </Chip>
                 </TouchableOpacity>
               ))}
-            </HStack>
-          </VStack>
+            </View>
+          </View>
 
           {/* Manual Input */}
-          <VStack space="xs">
-            <Text fontSize="$sm" color="$textDark600" fontWeight="$medium">
+          <View style={styles.inputSection}>
+            <Text variant="bodySmall" style={styles.inputLabel}>
               หรือกรอกค่าเอง:
             </Text>
-            <HStack space="sm" alignItems="center">
-              <Box flex={1}>
-                <Input
-                  variant="outline"
-                  size="lg"
-                  borderWidth={2}
-                  borderColor="$borderLight200"
-                  borderRadius="$lg"
-                  bg="$backgroundLight100"
-                  focusable={true}
-                  $focus={{
-                    borderColor: "$blue500",
-                    bg: "$white",
-                  }}
-                >
-                  <InputField
-                    value={inputValue}
-                    onChangeText={handleInputChange}
-                    keyboardType="decimal-pad"
-                    placeholder="0.5 - 5.0"
-                    fontSize="$md"
-                    fontWeight="$medium"
-                    color="$textDark950"
-                  />
-                </Input>
-              </Box>
-              <Box
-                bg="$backgroundLight100"
-                px="$4"
-                py="$3"
-                borderRadius="$lg"
-                borderWidth={2}
-                borderColor="$borderLight200"
-              >
-                <Text fontSize="$md" fontWeight="$semibold" color="$textDark700">
-                  เมตร
-                </Text>
-              </Box>
-            </HStack>
-            <Text fontSize="$xs" color="$textDark500" mt="$1">
+            <View style={styles.inputRow}>
+              <TextInput
+                value={inputValue}
+                onChangeText={handleInputChange}
+                keyboardType="decimal-pad"
+                placeholder="0.5 - 5.0"
+                mode="outlined"
+                style={styles.textInput}
+                dense
+              />
+              <View style={styles.unitBox}>
+                <Text variant="bodyMedium" style={styles.unitText}>เมตร</Text>
+              </View>
+            </View>
+            <Text variant="labelSmall" style={styles.inputHint}>
               💡 ระบุค่าระหว่าง 0.5 - 5.0 เมตร
             </Text>
-          </VStack>
-        </VStack>
-      </VStack>
-    </Box>
+          </View>
+        </View>
+      </Card.Content>
+    </Card>
   );
 };
 
 const styles = StyleSheet.create({
-  presetButton: {
-    marginBottom: 8,
+  card: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  icon: {
+    fontSize: 24,
+  },
+  title: {
+    fontFamily: 'Prompt_700Bold',
+    color: '#0F172A',
+  },
+  divider: {
+    marginBottom: 16,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  sectionIcon: {
+    fontSize: 18,
+  },
+  sectionTitle: {
+    fontFamily: 'Prompt_600SemiBold',
+    color: '#334155',
+  },
+  yearGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
   },
   yearButton: {
-    marginBottom: 12,
+    marginBottom: 4,
   },
-});
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    color: '#0F172A',
-    fontWeight: '500',
+  yearCard: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+    minWidth: 100,
   },
-  inputAndroid: {
-    fontSize: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+  yearCardSelected: {
+    backgroundColor: '#0EA5E9',
+    borderColor: '#0EA5E9',
+  },
+  yearContent: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    position: 'relative',
+  },
+  yearLabel: {
+    fontFamily: 'Prompt_500Medium',
+    color: '#64748B',
+    opacity: 0.8,
+    marginBottom: 4,
+  },
+  yearLabelSelected: {
+    color: '#fff',
+  },
+  yearValue: {
+    fontFamily: 'Prompt_700Bold',
     color: '#0F172A',
-    fontWeight: '500',
+  },
+  yearValueSelected: {
+    color: '#fff',
+  },
+  checkmark: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#10B981',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  checkmarkText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    gap: 8,
+  },
+  infoIcon: {
+    fontSize: 16,
+  },
+  infoText: {
+    flex: 1,
+    fontFamily: 'Prompt_400Regular',
+    color: '#1E40AF',
+  },
+  levelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  levelHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  valueChip: {
+    backgroundColor: '#EFF6FF',
+  },
+  valueChipText: {
+    fontFamily: 'Prompt_700Bold',
+    color: '#0EA5E9',
+    fontSize: 18,
+  },
+  sliderContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  sliderLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  sliderLabel: {
+    fontFamily: 'Prompt_400Regular',
+    color: '#64748B',
+  },
+  presetsSection: {
+    marginTop: 8,
+    gap: 8,
+  },
+  presetsTitle: {
+    fontFamily: 'Prompt_600SemiBold',
+    color: '#475569',
+  },
+  presetsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  presetChip: {
+    borderColor: '#E2E8F0',
+  },
+  presetChipSelected: {
+    backgroundColor: '#0EA5E9',
+  },
+  presetChipText: {
+    fontFamily: 'Prompt_600SemiBold',
+    color: '#334155',
+  },
+  presetChipTextSelected: {
+    color: '#fff',
+  },
+  inputSection: {
+    marginTop: 16,
+    gap: 8,
+  },
+  inputLabel: {
+    fontFamily: 'Prompt_600SemiBold',
+    color: '#475569',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  textInput: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    fontFamily: 'Prompt_500Medium',
+  },
+  unitBox: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  unitText: {
+    fontFamily: 'Prompt_600SemiBold',
+    color: '#334155',
+  },
+  inputHint: {
+    fontFamily: 'Prompt_400Regular',
+    color: '#64748B',
   },
 });

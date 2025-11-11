@@ -1,27 +1,17 @@
 import React from 'react';
-import { Box, VStack, HStack, Text, Grid, GridItem } from '@gluestack-ui/themed';
+import { View, StyleSheet } from 'react-native';
+import { Card, Text } from 'react-native-paper';
 
 const MetricCard = ({ label, value, icon, color }) => (
-  <Box 
-    bg="$white" 
-    p="$5" 
-    borderRadius="$lg"
-    borderTopWidth={4}
-    borderTopColor={color}
-    shadowColor="$black"
-    shadowOpacity={0.08}
-    shadowRadius={8}
-    elevation={4}
-    alignItems="center"
-  >
-    <Text fontSize="$3xl" mb="$2">{icon}</Text>
-    <Text fontSize="$sm" color="$textDark600" mb="$2" textAlign="center">
-      {label}
-    </Text>
-    <Text fontSize="$2xl" fontWeight="$bold" color={color}>
-      {value}
-    </Text>
-  </Box>
+  <Card style={[styles.metricCard, { borderTopColor: color }]} elevation={2}>
+    <Card.Content style={styles.metricContent}>
+      <Text variant="displaySmall" style={styles.metricIcon}>{icon}</Text>
+      <Text variant="bodySmall" style={styles.metricLabel}>{label}</Text>
+      <Text variant="headlineMedium" style={[styles.metricValue, { color }]}>
+        {value}
+      </Text>
+    </Card.Content>
+  </Card>
 );
 
 export const MetricsGrid = ({ 
@@ -31,56 +21,94 @@ export const MetricsGrid = ({
   numSteps 
 }) => {
   return (
-    <Box mx="$4" mb="$3">
-      <Text 
-        fontSize="$lg" 
-        fontWeight="$bold" 
-        color="$textDark950"
-        mb="$3"
-        px="$1"
-      >
+    <View style={styles.container}>
+      <Text variant="titleLarge" style={styles.title}>
         สรุปผลการวิเคราะห์
       </Text>
       
-      <VStack space="md">
-        <HStack space="md">
-          <Box flex={1}>
+      <View style={styles.grid}>
+        <View style={styles.row}>
+          <View style={styles.col}>
             <MetricCard 
               icon="📊"
               label="ระดับน้ำเฉลี่ย" 
               value={`${averageLevel.toFixed(2)} ม.`}
-              color="$blue500"
+              color="#0EA5E9"
             />
-          </Box>
-          <Box flex={1}>
+          </View>
+          <View style={styles.col}>
             <MetricCard 
               icon="🏔️"
               label="ระดับตลิ่ง" 
               value={`${riverbankLevel.toFixed(2)} ม.`}
-              color="$purple500"
+              color="#8B5CF6"
             />
-          </Box>
-        </HStack>
+          </View>
+        </View>
         
-        <HStack space="md">
-          <Box flex={1}>
+        <View style={styles.row}>
+          <View style={styles.col}>
             <MetricCard 
               icon="⬆️"
               label="ระดับสูงสุด" 
               value={`${maxLevel.toFixed(2)} ม.`}
-              color="$red500"
+              color="#EF4444"
             />
-          </Box>
-          <Box flex={1}>
+          </View>
+          <View style={styles.col}>
             <MetricCard 
               icon="📍"
               label="จุดวัด" 
               value={`${numSteps} จุด`}
-              color="$green500"
+              color="#10B981"
             />
-          </Box>
-        </HStack>
-      </VStack>
-    </Box>
+          </View>
+        </View>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  title: {
+    fontFamily: 'Prompt_700Bold',
+    color: '#0F172A',
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  grid: {
+    gap: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  col: {
+    flex: 1,
+  },
+  metricCard: {
+    backgroundColor: '#fff',
+    borderTopWidth: 4,
+  },
+  metricContent: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  metricIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  metricLabel: {
+    fontFamily: 'Prompt_400Regular',
+    color: '#64748B',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  metricValue: {
+    fontFamily: 'Prompt_700Bold',
+  },
+});

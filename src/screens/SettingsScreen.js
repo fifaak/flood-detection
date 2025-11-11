@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import { Box, VStack, HStack, Text, Button, ButtonText } from '@gluestack-ui/themed';
+import { ScrollView, View, StyleSheet } from 'react-native';
+import { Button, Text, Card } from 'react-native-paper';
 import { Header } from '../components/Header';
 import { InputSection } from '../components/InputSection';
 import { YEAR_OPTIONS, RIVERBANK_OPTIONS } from '../constants/floodData';
@@ -17,30 +17,19 @@ export const SettingsScreen = ({ navigation }) => {
   };
 
   return (
-    <Box flex={1} bg="$backgroundLight50">
+    <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <VStack space="md">
-          <Header />
-          
-          <Box px="$4" py="$2">
-            <VStack space="xs">
-              <Text 
-                fontSize="$2xl" 
-                fontWeight="$bold" 
-                color="$textDark950"
-                fontFamily="Prompt_700Bold"
-              >
-                ตั้งค่าการคำนวณ
-              </Text>
-              <Text 
-                fontSize="$md" 
-                color="$textDark600"
-                fontFamily="Prompt_400Regular"
-              >
-                กรุณาเลือกข้อมูลที่ต้องการวิเคราะห์
-              </Text>
-            </VStack>
-          </Box>
+        <Header />
+        
+        <View style={styles.content}>
+          <View style={styles.titleSection}>
+            <Text variant="headlineMedium" style={styles.title}>
+              ตั้งค่าการคำนวณ
+            </Text>
+            <Text variant="bodyMedium" style={styles.subtitle}>
+              กรุณาเลือกข้อมูลที่ต้องการวิเคราะห์
+            </Text>
+          </View>
           
           <InputSection
             selectedYear={selectedYear}
@@ -52,156 +41,201 @@ export const SettingsScreen = ({ navigation }) => {
           />
 
           {/* Info Cards */}
-          <VStack space="sm" mx="$4">
-            <Box 
-              bg="$blue50" 
-              p="$4" 
-              borderRadius="$lg"
-              borderLeftWidth={4}
-              borderLeftColor="$blue500"
-            >
-              <HStack space="sm" alignItems="center">
-                <Text fontSize="$xl">📊</Text>
-                <VStack flex={1}>
-                  <Text 
-                    fontSize="$sm" 
-                    fontWeight="$semibold" 
-                    color="$blue700"
-                    fontFamily="Prompt_600SemiBold"
-                  >
+          <View style={styles.infoCards}>
+            <Card style={[styles.infoCard, styles.blueCard]} elevation={1}>
+              <Card.Content style={styles.infoCardContent}>
+                <Text variant="bodyMedium" style={styles.infoIcon}>📊</Text>
+                <View style={styles.infoTextContainer}>
+                  <Text variant="titleSmall" style={styles.infoCardTitle}>
                     ข้อมูลที่เลือก
                   </Text>
-                  <Text 
-                    fontSize="$xs" 
-                    color="$blue600"
-                    fontFamily="Prompt_400Regular"
-                  >
+                  <Text variant="bodySmall" style={styles.infoCardText}>
                     ปี {selectedYear} • ระดับตลิ่ง {riverbankLevel.toFixed(1)} เมตร
                   </Text>
-                </VStack>
-              </HStack>
-            </Box>
+                </View>
+              </Card.Content>
+            </Card>
 
-            <Box 
-              bg="$purple50" 
-              p="$4" 
-              borderRadius="$lg"
-              borderLeftWidth={4}
-              borderLeftColor="$purple500"
-            >
-              <HStack space="sm" alignItems="center">
-                <Text fontSize="$xl">🔬</Text>
-                <VStack flex={1}>
-                  <Text 
-                    fontSize="$sm" 
-                    fontWeight="$semibold" 
-                    color="$purple700"
-                    fontFamily="Prompt_600SemiBold"
-                  >
+            <Card style={[styles.infoCard, styles.purpleCard]} elevation={1}>
+              <Card.Content style={styles.infoCardContent}>
+                <Text variant="bodyMedium" style={styles.infoIcon}>🔬</Text>
+                <View style={styles.infoTextContainer}>
+                  <Text variant="titleSmall" style={styles.infoCardTitle}>
                     วิธีการคำนวณ
                   </Text>
-                  <Text 
-                    fontSize="$xs" 
-                    color="$purple600"
-                    fontFamily="Prompt_400Regular"
-                  >
+                  <Text variant="bodySmall" style={styles.infoCardText}>
                     Saint-Venant Equation • Euler's Method
                   </Text>
-                </VStack>
-              </HStack>
-            </Box>
-          </VStack>
+                </View>
+              </Card.Content>
+            </Card>
+          </View>
 
           {/* Calculate Button */}
-          <Box px="$4" py="$6">
+          <View style={styles.buttonContainer}>
             <Button
-              size="xl"
-              bg="$blue500"
-              borderRadius="$xl"
+              mode="contained"
               onPress={handleCalculate}
-              shadowColor="$blue500"
-              shadowOpacity={0.3}
-              shadowRadius={12}
-              elevation={8}
-              $active-bg="$blue600"
-              h="$16"
+              style={styles.button}
+              contentStyle={styles.buttonContent}
+              labelStyle={styles.buttonLabel}
+              elevation={4}
             >
-              <HStack space="md" alignItems="center">
-                <Text fontSize="$2xl">🧮</Text>
-                <ButtonText 
-                  fontSize="$xl" 
-                  fontWeight="$bold"
-                  fontFamily="Prompt_700Bold"
-                >
-                  คำนวณและวิเคราะห์
-                </ButtonText>
-              </HStack>
+              🧮  คำนวณและวิเคราะห์
             </Button>
-          </Box>
+          </View>
 
           {/* Additional Info */}
-          <Box 
-            bg="$white" 
-            mx="$4" 
-            mb="$8" 
-            p="$5" 
-            borderRadius="$xl"
-            shadowColor="$black"
-            shadowOpacity={0.05}
-            shadowRadius={8}
-            elevation={2}
-          >
-            <VStack space="md">
-              <HStack space="sm" alignItems="center">
-                <Text fontSize="$xl">💡</Text>
-                <Text 
-                  fontSize="$lg" 
-                  fontWeight="$bold" 
-                  color="$textDark950"
-                  fontFamily="Prompt_700Bold"
-                >
+          <Card style={styles.aboutCard} elevation={1}>
+            <Card.Content>
+              <View style={styles.aboutHeader}>
+                <Text variant="bodyMedium" style={styles.aboutIcon}>💡</Text>
+                <Text variant="titleLarge" style={styles.aboutTitle}>
                   เกี่ยวกับการคำนวณ
                 </Text>
-              </HStack>
+              </View>
               
-              <VStack space="sm">
-                <Text 
-                  fontSize="$sm" 
-                  color="$textDark700"
-                  lineHeight="$md"
-                  fontFamily="Prompt_400Regular"
-                >
-                  • ระบบจะคำนวณระดับน้ำในระยะทาง 7,000 เมตร
-                </Text>
-                <Text 
-                  fontSize="$sm" 
-                  color="$textDark700"
-                  lineHeight="$md"
-                  fontFamily="Prompt_400Regular"
-                >
-                  • แบ่งเป็น 14 ช่วง ช่วงละ 500 เมตร
-                </Text>
-                <Text 
-                  fontSize="$sm" 
-                  color="$textDark700"
-                  lineHeight="$md"
-                  fontFamily="Prompt_400Regular"
-                >
-                  • ใช้ข้อมูลอุทกวิทยาจริงจากแม่น้ำในจังหวัดสระบุรี
-                </Text>
-                <Text 
-                  fontSize="$sm" 
-                  color="$textDark700"
-                  lineHeight="$md"
-                  fontFamily="Prompt_400Regular"
-                >
-                  • ผลลัพธ์จะแสดงโอกาสการเกิดน้ำท่วมและกราฟวิเคราะห์
-                </Text>
-              </VStack>
-            </VStack>
-          </Box>
-        </VStack>
+              <View style={styles.aboutList}>
+                <View style={styles.aboutItem}>
+                  <Text variant="bodyMedium" style={styles.bullet}>•</Text>
+                  <Text variant="bodyMedium" style={styles.aboutText}>
+                    ระบบจะคำนวณระดับน้ำในระยะทาง 7,000 เมตร
+                  </Text>
+                </View>
+                
+                <View style={styles.aboutItem}>
+                  <Text variant="bodyMedium" style={styles.bullet}>•</Text>
+                  <Text variant="bodyMedium" style={styles.aboutText}>
+                    แบ่งเป็น 14 ช่วง ช่วงละ 500 เมตร
+                  </Text>
+                </View>
+                
+                <View style={styles.aboutItem}>
+                  <Text variant="bodyMedium" style={styles.bullet}>•</Text>
+                  <Text variant="bodyMedium" style={styles.aboutText}>
+                    ใช้ข้อมูลอุทกวิทยาจริงจากแม่น้ำในจังหวัดสระบุรี
+                  </Text>
+                </View>
+                
+                <View style={styles.aboutItem}>
+                  <Text variant="bodyMedium" style={styles.bullet}>•</Text>
+                  <Text variant="bodyMedium" style={styles.aboutText}>
+                    ผลลัพธ์จะแสดงโอกาสการเกิดน้ำท่วมและกราฟวิเคราะห์
+                  </Text>
+                </View>
+              </View>
+            </Card.Content>
+          </Card>
+        </View>
       </ScrollView>
-    </Box>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  content: {
+    paddingBottom: 32,
+  },
+  titleSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 4,
+  },
+  title: {
+    fontFamily: 'Prompt_700Bold',
+    color: '#0F172A',
+  },
+  subtitle: {
+    fontFamily: 'Prompt_400Regular',
+    color: '#64748B',
+  },
+  infoCards: {
+    paddingHorizontal: 16,
+    marginTop: 8,
+    gap: 12,
+  },
+  infoCard: {
+    borderLeftWidth: 4,
+  },
+  blueCard: {
+    backgroundColor: '#EFF6FF',
+    borderLeftColor: '#0EA5E9',
+  },
+  purpleCard: {
+    backgroundColor: '#F5F3FF',
+    borderLeftColor: '#8B5CF6',
+  },
+  infoCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  infoIcon: {
+    fontSize: 20,
+  },
+  infoTextContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  infoCardTitle: {
+    fontFamily: 'Prompt_600SemiBold',
+    color: '#1E293B',
+  },
+  infoCardText: {
+    fontFamily: 'Prompt_400Regular',
+    color: '#475569',
+  },
+  buttonContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  },
+  button: {
+    borderRadius: 12,
+  },
+  buttonContent: {
+    height: 64,
+  },
+  buttonLabel: {
+    fontFamily: 'Prompt_700Bold',
+    fontSize: 18,
+  },
+  aboutCard: {
+    marginHorizontal: 16,
+    marginBottom: 32,
+    backgroundColor: '#fff',
+  },
+  aboutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  aboutIcon: {
+    fontSize: 20,
+  },
+  aboutTitle: {
+    fontFamily: 'Prompt_700Bold',
+    color: '#0F172A',
+  },
+  aboutList: {
+    gap: 12,
+  },
+  aboutItem: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  bullet: {
+    fontFamily: 'Prompt_400Regular',
+    color: '#334155',
+  },
+  aboutText: {
+    flex: 1,
+    fontFamily: 'Prompt_400Regular',
+    color: '#334155',
+    lineHeight: 22,
+  },
+});
