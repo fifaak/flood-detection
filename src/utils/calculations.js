@@ -97,7 +97,7 @@ export const calculateFloodPrediction = (
   // Calculate statistics (monthly average by dividing by 12)
   const W_average = (W_levels.slice(1).reduce((a, b) => a + b, 0) / num_steps) / 12;
   const maxLevel = Math.max(...W_levels) / 12;
-  const isFlooding = W_average > riverbankLevel;
+  const isFlooding = maxLevel > riverbankLevel;
   
   return {
     W_levels,

@@ -71,7 +71,7 @@ export const ResultsScreen = ({ route, navigation }) => {
             />
 
             <WaterLevelChart
-              waterLevels={results.W_levels}
+              waterLevels={results.W_levels.map(level => level / 12)}
               riverbankLevel={riverbankLevel}
               numSteps={NUM_STEPS}
             />
