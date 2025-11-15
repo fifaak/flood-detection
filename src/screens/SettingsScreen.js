@@ -6,7 +6,7 @@ import { InputSection } from '../components/InputSection';
 import { YEAR_OPTIONS, RIVERBANK_OPTIONS } from '../constants/floodData';
 
 export const SettingsScreen = ({ navigation }) => {
-  const [selectedYear, setSelectedYear] = useState(2564);
+  const [selectedYear, setSelectedYear] = useState(2565);
   const [riverbankLevel, setRiverbankLevel] = useState(2.0);
 
   const handleCalculate = () => {

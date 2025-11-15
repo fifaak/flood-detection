@@ -62,8 +62,8 @@ Visit: https://expo.dev/accounts/fifaak/projects/flood-prediction/builds/5d9c60e
 - Real hydrological data from Saraburi province
 
 ✅ **Interactive UI**
-- Year selection (2564-2567)
-- Riverbank level adjustment (0.5-5.0m)
+- Year selection (2565-2568)
+- Riverbank level adjustment (1.5-20.0m)
 - Real-time calculations
 - Visual charts and metrics
 - Flood risk assessment

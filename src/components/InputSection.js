@@ -17,7 +17,7 @@ export const InputSection = ({
   const handleInputChange = (text) => {
     setInputValue(text);
     const numValue = parseFloat(text);
-    if (!isNaN(numValue) && numValue >= 0.5 && numValue <= 5.0) {
+    if (!isNaN(numValue) && numValue >= 1.5 && numValue <= 20.0) {
       setSliderValue(numValue);
       onRiverbankChange(numValue);
     }
@@ -130,47 +130,17 @@ export const InputSection = ({
             <Slider
               value={sliderValue}
               onValueChange={handleSliderChange}
-              minimumValue={0.5}
-              maximumValue={5.0}
-              step={0.1}
+              minimumValue={1.5}
+              maximumValue={20.0}
+              step={0.5}
               minimumTrackTintColor="#0EA5E9"
               maximumTrackTintColor="#E2E8F0"
               thumbTintColor="#0EA5E9"
               style={styles.slider}
             />
             <View style={styles.sliderLabels}>
-              <Text variant="labelSmall" style={styles.sliderLabel}>0.5 ม.</Text>
-              <Text variant="labelSmall" style={styles.sliderLabel}>5.0 ม.</Text>
-            </View>
-          </View>
-
-          {/* Quick Presets */}
-          <View style={styles.presetsSection}>
-            <Text variant="bodySmall" style={styles.presetsTitle}>
-              ค่าที่แนะนำ:
-            </Text>
-            <View style={styles.presetsGrid}>
-              {[1.5, 2.0, 2.5, 3.0, 3.5, 4.0].map((preset) => (
-                <TouchableOpacity
-                  key={preset}
-                  onPress={() => handlePresetClick(preset)}
-                >
-                  <Chip
-                    mode={sliderValue === preset ? 'flat' : 'outlined'}
-                    selected={sliderValue === preset}
-                    style={[
-                      styles.presetChip,
-                      sliderValue === preset && styles.presetChipSelected
-                    ]}
-                    textStyle={[
-                      styles.presetChipText,
-                      sliderValue === preset && styles.presetChipTextSelected
-                    ]}
-                  >
-                    {preset.toFixed(1)} ม.
-                  </Chip>
-                </TouchableOpacity>
-              ))}
+              <Text variant="labelSmall" style={styles.sliderLabel}>1.5 ม.</Text>
+              <Text variant="labelSmall" style={styles.sliderLabel}>20.0 ม.</Text>
             </View>
           </View>
 
@@ -184,7 +154,7 @@ export const InputSection = ({
                 value={inputValue}
                 onChangeText={handleInputChange}
                 keyboardType="decimal-pad"
-                placeholder="0.5 - 5.0"
+                placeholder="1.5 - 20.0"
                 mode="outlined"
                 style={styles.textInput}
                 dense
@@ -194,7 +164,7 @@ export const InputSection = ({
               </View>
             </View>
             <Text variant="labelSmall" style={styles.inputHint}>
-              💡 ระบุค่าระหว่าง 0.5 - 5.0 เมตร
+              💡 ระบุค่าระหว่าง 1.5 - 20.0 เมตร
             </Text>
           </View>
         </View>
